@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KilnGrid — Coming soon</title>
+<meta name="description" content="KilnGrid is coming soon. Join our waitlist.">
+<meta name="theme-color" content="#d3d4e0">
+<meta property="og:title" content="KilnGrid — Coming soon">
+<meta property="og:description" content="Join our waitlist.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff8a4c'/%3E%3Cstop offset='1' stop-color='%23ff4f6d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='1' y='1' width='8' height='8' rx='1.6' fill='%2315151c'/%3E%3Ccircle cx='15' cy='5' r='4' fill='url(%23g)'/%3E%3Crect x='1' y='11' width='8' height='8' rx='1.6' fill='%2315151c'/%3E%3Crect x='11' y='11' width='8' height='8' rx='1.6' fill='%2315151c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  /*
+    Built to the Product Design Operating Manual (v1.0):
+    · 4/8 px geometry — every space below is a token: 4 8 12 16 20 24 32 40 48 64 80 96
+    · grid classes — compact <600 (16 margin) · medium 600–839 (24) · expanded 840–1199 (32) · large 1200–1599 (48) · XL ≥1600 (64)
+    · top bar 56 compact / 64 desktop, logo artwork 24 high, hit region ≥ 44
+    · controls 48 touch-first, input text 16/24, button label 14/20 600
+    · motion tokens 70 / 110 / 240 / 400 / 700 ms; reduced motion respected
+    Documented exceptions:
+    · logo is centred, not top-left — the page is one centred composition with no navigation to return from
+    · the headline is a display serif scaled above the 48/56 ramp — brand voice
+    · controls are pills — deliberate product language
+  */
+  :root{
+    --bg:#d3d4e0;--ink:#15151c;--ink-2:rgba(21,21,28,.70);--danger:#a3231c;
+    --m:16px;--bar:56px;--h1:48px;--gap:24px;--foot:40px;
+    --t-press:70ms;--t-fast:110ms;--t-med:240ms;--t-slow:400ms;--t-atmos:700ms;
+    --ease:cubic-bezier(.2,0,.38,.9);--ease-in:cubic-bezier(0,0,.38,.9);
+  }
+  @media (min-width:600px){:root{--m:24px;--h1:64px;--gap:32px;--foot:48px}}
+  @media (min-width:840px){:root{--m:32px;--bar:64px;--h1:72px;--foot:64px}}
+  @media (min-width:1200px){:root{--m:48px;--h1:80px}}
+  @media (min-width:1600px){:root{--m:64px;--h1:96px;--foot:80px}}
+  @media (max-height:700px){:root{--h1:56px;--foot:40px;--gap:24px}}
+  @media (max-height:560px){:root{--h1:48px;--foot:32px}}
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",sans-serif;
+    font-size:16px;line-height:24px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-webkit-tap-highlight-color:transparent}
+  ::selection{background:rgba(255,255,255,.6)}
+
+  #bg,#gl{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity var(--t-atmos) var(--ease-in)}
+  .ready #bg,.ready #gl{opacity:1}
+
+  .page{position:relative;z-index:1;height:100vh;height:100dvh;display:grid;grid-template-rows:var(--bar) minmax(0,1fr) auto;justify-items:center;
+    padding:env(safe-area-inset-top) max(var(--m),env(safe-area-inset-right)) calc(var(--foot) + env(safe-area-inset-bottom)) max(var(--m),env(safe-area-inset-left));
+    pointer-events:none}
+  main{display:contents}
+  .bar,.copy>*{pointer-events:auto}
+
+  .in{opacity:0;transform:translateY(8px);transition:opacity var(--t-atmos) var(--ease-in) var(--d,0s),transform var(--t-atmos) var(--ease-in) var(--d,0s)}
+  .ready .in{opacity:1;transform:none}
+
+  /* top bar: 56 / 64, artwork 24 high, hit region 44 */
+  .bar{grid-row:1;height:var(--bar);display:flex;align-items:center;justify-content:center}
+  .brand{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 8px;border-radius:8px;
+    font-size:20px;line-height:28px;font-weight:600;letter-spacing:-.035em;color:var(--ink);text-decoration:none}
+  .brand svg{width:24px;height:24px;display:block;flex:none}
+  .brand:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  /* the glass takes whatever the grid leaves it */
+  .stage{grid-row:2;width:100%;min-height:0;display:grid;place-items:center}
+
+  .copy{grid-row:3;width:100%;display:grid;justify-items:center}
+  h1{font-family:"Instrument Serif","Times New Roman",serif;font-weight:400;font-size:var(--h1);line-height:1;letter-spacing:-.022em;text-align:center}
+  h1 em{font-style:italic;letter-spacing:-.01em;padding-right:.04em}
+
+  form{position:relative;margin-top:var(--gap);width:min(432px,100%)}
+  .field{
+    position:relative;display:flex;align-items:center;min-height:56px;padding:4px 4px 4px 24px;border-radius:28px;
+    background:linear-gradient(180deg,rgba(255,255,255,.66),rgba(255,255,255,.40));
+    border:1px solid rgba(255,255,255,.8);
+    -webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 1px 2px rgba(20,20,40,.06),0 24px 48px -24px rgba(50,45,100,.45);
+    transition:background var(--t-med) var(--ease),box-shadow var(--t-med) var(--ease);
+  }
+  .field:focus-within{background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.56));outline:2px solid var(--ink);outline-offset:2px}
+  .bad .field{outline:2px solid var(--danger);outline-offset:2px}
+
+  /* the label never disappears: it rests in the field, then rides above the value */
+  .control{position:relative;flex:1;min-width:0}
+  input{display:block;width:100%;height:48px;padding:16px 8px 0 0;border:0;outline:0;background:transparent;
+    font:inherit;font-size:16px;line-height:24px;letter-spacing:-.01em;color:var(--ink);border-radius:0}
+  label{position:absolute;left:0;top:12px;font-size:16px;line-height:24px;letter-spacing:-.01em;color:var(--ink-2);pointer-events:none;
+    transform-origin:0 0;transition:transform var(--t-fast) var(--ease);white-space:nowrap}
+  input:focus+label,input:not(:placeholder-shown)+label{transform:translateY(-8px) scale(.75)}
+
+  button{
+    flex:none;min-height:48px;padding:0 24px;border:0;border-radius:24px;cursor:pointer;white-space:nowrap;
+    font:inherit;font-size:14px;line-height:20px;font-weight:600;letter-spacing:-.005em;color:#fff;background:var(--ink);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 16px -8px rgba(10,10,20,.6);
+    transition:background var(--t-fast) var(--ease),transform var(--t-press) var(--ease),opacity var(--t-med) var(--ease);
+  }
+  @media (hover:hover){button:hover{background:#000}}
+  button:active{transform:scale(.97)}
+  button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+  /* compact and narrow: stack rather than squeeze */
+  @media (max-width:359px){
+    .field{flex-wrap:wrap;padding:4px}
+    .control{flex:1 0 100%;padding:0 20px}
+    label{left:20px}
+    button{width:100%;margin-top:4px}
+  }
+
+  .control,.field>button{transition:opacity var(--t-med) var(--ease),transform var(--t-press) var(--ease),background var(--t-fast) var(--ease)}
+  .thanks{position:absolute;inset:0;display:grid;place-items:center;padding:0 16px;text-align:center;
+    font-family:"Instrument Serif",serif;font-style:italic;font-size:20px;line-height:28px;
+    opacity:0;pointer-events:none;transition:opacity var(--t-slow) var(--ease-in) var(--t-fast)}
+  .done .control,.done .field>button{opacity:0;pointer-events:none}
+  .done .thanks{opacity:1}
+
+  /* errors say what happened and how to fix it; never colour alone */
+  .error{position:absolute;left:0;right:0;top:calc(100% + 8px);text-align:center;font-size:14px;line-height:20px;font-weight:500;color:var(--danger);
+    opacity:0;transition:opacity var(--t-med) var(--ease)}
+  .bad .error{opacity:1}
+
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* phone on its side: glass and words sit side by side instead of shrinking */
+  @media (orientation:landscape) and (max-height:480px) and (min-width:560px){
+    :root{--h1:48px;--gap:24px;--foot:16px}
+    .page{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:var(--bar) minmax(0,1fr);column-gap:var(--m)}
+    .bar{grid-column:1/-1}
+    .stage{grid-column:1;grid-row:2}
+    .copy{grid-column:2;grid-row:2;align-self:center}
+  }
+  /* heavy zoom / tiny windows: the task stays, the decoration goes, and the page may scroll */
+  @media (max-height:279px),(max-height:399px) and (max-width:559px){
+    html,body{overflow:auto}
+    .page{height:auto;min-height:100vh;min-height:100dvh;grid-template-rows:var(--bar) auto;align-content:start}
+    .stage,#gl{display:none}
+    .copy{grid-row:2;padding-top:24px}
+  }
+
+  /* without WebGL the ring is drawn flat */
+  .fallback{display:none}
+  .no-gl #gl{display:none}
+  .no-gl .fallback{display:block;height:min(72%,62vw);aspect-ratio:1;border-radius:50%;
+    background:conic-gradient(from 210deg,#bfe3ff,#d9c4ff,#ffc9dc,#ffe3c4,#c9f2e2,#bfe3ff);
+    -webkit-mask:radial-gradient(closest-side,transparent 56%,#000 57%);mask:radial-gradient(closest-side,transparent 56%,#000 57%);opacity:.9}
+
+  @media (prefers-reduced-motion:reduce){
+    .in{transform:none;transition:opacity var(--t-med) linear}
+    button:active{transform:none}
+    label{transition:none}
+  }
+</style>
+</head>
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <canvas id="gl" aria-hidden="true"></canvas>
+
+  <div class="page">
+    <header class="bar">
+      <a class="brand in" style="--d:.1s" href="/" aria-label="KilnGrid, home">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8a4c"/><stop offset="1" stop-color="#ff4f6d"/></linearGradient></defs>
+          <rect x="1" y="1" width="8" height="8" rx="1.6" fill="#15151c"/>
+          <circle cx="15" cy="5" r="4" fill="url(#g)"/>
+          <rect x="1" y="11" width="8" height="8" rx="1.6" fill="#15151c"/>
+          <rect x="11" y="11" width="8" height="8" rx="1.6" fill="#15151c"/>
+        </svg>
+        KilnGrid
+      </a>
+    </header>
+
+    <main>
+      <div class="stage" id="stage" aria-hidden="true"><div class="fallback"></div></div>
+
+      <div class="copy">
+        <h1 class="in" style="--d:.4s">Coming <em>soon</em></h1>
+        <form class="in" style="--d:.55s" id="form" novalidate data-endpoint="">
+          <div class="field">
+            <div class="control">
+              <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder=" " autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-describedby="err" required>
+              <label for="email">Email address</label>
+            </div>
+            <button type="submit">Join our waitlist</button>
+            <div class="thanks" id="thanks" role="status"></div>
+          </div>
+          <p class="error" id="err" role="alert"></p>
+        </form>
+      </div>
+    </main>
+  </div>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const canvas = document.getElementById('gl');
+  const form = document.getElementById('form'), input = document.getElementById('email');
+  const stage = document.getElementById('stage');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const valid = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+
+  const S = { heat:0, heatT:0, pulse:0, flow:0 };
+
+  /* ───────── waitlist: typing warms the glass ───────── */
+  const err = document.getElementById('err'), thanks = document.getElementById('thanks');
+  const fail = msg => {
+    err.textContent = msg;
+    form.classList.add('bad'); input.setAttribute('aria-invalid', 'true'); input.focus();
+  };
+  input.addEventListener('input', () => {
+    if (form.classList.contains('bad')) { form.classList.remove('bad'); input.removeAttribute('aria-invalid'); err.textContent = ''; }
+    const v = input.value.trim();
+    S.heatT = valid(v) ? 1 : Math.min(.6, v.length / 22) + (v.includes('@') ? .12 : 0);
+    S.pulse = Math.min(1, S.pulse + .35);
+  });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = input.value.trim();
+    if (!email) return fail('Enter your email address to join.');
+    if (!valid(email)) return fail('Check the address — it should look like name@example.com.');
+    form.classList.remove('bad'); input.removeAttribute('aria-invalid'); err.textContent = '';
+    const btn = form.querySelector('button'); btn.disabled = true;
+    try {
+      const url = form.dataset.endpoint;            // set data-endpoint on the form to POST { email } to your backend
+      if (url) { const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json', 'Accept':'application/json'}, body:JSON.stringify({ email }) }); if (!r.ok) throw 0; }
+      else { try { localStorage.setItem('kilngrid:waitlist', email); } catch (_) {} }
+      thanks.textContent = 'You’re on the list.';
+      form.classList.add('done'); input.blur();
+      S.heatT = 1; S.pulse = 1;
+    } catch (_) { btn.disabled = false; fail('We couldn’t add you just now. Check your connection and try again.'); }
+  });
+
+  /* ───────── glass ───────── */
+  const gl = canvas.getContext('webgl', { antialias:false, alpha:true, premultipliedAlpha:true, powerPreference:'high-performance' });
+
+  const VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const FS = `
+  precision highp float;
+  uniform sampler2D uTex;
+  uniform vec2 uRes,uC;
+  uniform float uR,uT,uFlow,uHeat,uPulse,uIn,uPr,uTook;
+  uniform vec3 uPp;
+  uniform mat3 RM;
+
+  float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+  mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
+  float smin(float a,float b,float k){float h=max(k-abs(a-b),0.)/k;return min(a,b)-h*h*k*.25;}
+  vec3 pal(float h){return .5+.5*cos(6.28318*(h+vec3(0.,.33,.67)));}
+
+  /* a ribbon of glass, twisted one and a half times and closed into a ring */
+  float map(vec3 pw){
+    vec3 p=RM*pw;
+    float a=atan(p.y,p.x);
+    p.z-=.11*sin(a*3.-uFlow*.9);
+    float rr=.80+.045*sin(a*2.+uFlow*.6);
+    vec2 q=vec2(length(p.xy)-rr,p.z);
+    q*=rot(a*1.5+uFlow);
+    vec2 b=vec2(.205,.028)+vec2(0.,.018)*sin(a*2.-uFlow*1.3);
+    vec2 d=abs(q)-b;
+    float r=.082-.014*uTook+.02*uPulse*sin(a*6.+uT*9.);     /* the ring gives up what the cursor carries */
+    float ring=(length(max(d,0.))+min(max(d.x,d.y),0.)-r)*.58;
+    if(uPr<.004)return ring;
+    return smin(ring,(length(pw-uPp)-uPr)*.9,.26);              /* the piece: same glass, pulled free */
+  }
+  vec3 nrm(vec3 p){
+    const vec2 e=vec2(1.,-1.)*.003;
+    return normalize(e.xyy*map(p+e.xyy)+e.yyx*map(p+e.yyx)+e.yxy*map(p+e.yxy)+e.xxx*map(p+e.xxx));
+  }
+
+  /* a small studio: soft grey cyclorama, two softboxes, three coloured gels, two dark cards */
+  vec3 env(vec3 d){
+    vec3 c=mix(vec3(.50,.51,.64),vec3(.96,.96,1.),smoothstep(-.85,.9,d.y));
+    c+=vec3(2.2)*smoothstep(.88,.975,dot(d,normalize(vec3(-.55,.70,.45))));
+    c+=vec3(1.3)*smoothstep(.945,.99,dot(d,normalize(vec3(.82,.12,.56))));
+    c+=vec3(.50,.30,1.0)*(.42+.25*uHeat)*smoothstep(.15,1.,dot(d,normalize(vec3(-.85,-.25,.45))));
+    c+=vec3(1.0,.46,.30)*(.32+.45*uHeat)*smoothstep(.25,1.,dot(d,normalize(vec3(.70,-.62,.35))));
+    c+=vec3(.20,.72,1.0)*.34*smoothstep(.25,1.,dot(d,normalize(vec3(.25,.90,-.35))));
+    c*=1.-.66*smoothstep(.62,.93,dot(d,normalize(vec3(.12,-.78,.61))));
+    c*=1.-.40*smoothstep(.80,.97,dot(d,normalize(vec3(-.9,.2,-.35))));
+    return c;
+  }
+  vec3 behind(vec3 pe,vec3 d){
+    vec2 h=pe.xy+clamp(d.xy*((pe.z+1.1)/max(-d.z,.3)),-.45,.45);
+    return texture2D(uTex,(uC+h*uR)/uRes).rgb;
+  }
+  vec3 through(vec3 pe,vec3 d){return mix(env(d),behind(pe,d),smoothstep(.02,.45,-d.z));}
+
+  void main(){
+    vec2 frag=gl_FragCoord.xy;
+    vec4 o=vec4(0.);
+
+    /* the shadow it casts, and the colour it spills into it */
+    vec2 sp=(frag-(uC-vec2(0.,uR*1.20)))/vec2(uR*.82,uR*.055);
+    o.a=.18*exp(-dot(sp,sp))*uIn;
+    vec2 cp=(frag-(uC-vec2(0.,uR*1.195)))/vec2(uR*.46,uR*.03);
+    o.rgb+=mix(vec3(1.),pal(frag.x/uR*.16+uT*.03),.8)*exp(-dot(cp,cp))*(.10+.12*uHeat)*uIn;
+
+    vec2 uv=(frag-uC)/(uR*uIn);
+    float r2=dot(uv,uv);
+    vec2 pd=uv-uPp.xy;
+    float pr=uPr+.34;
+    bool nearP=uPr>.004&&dot(pd,pd)<pr*pr;
+    if(r2<1.5129||nearP){
+      float hz=max(r2<1.5129?sqrt(1.5129-r2):0.,nearP?pr:0.);
+      vec3 ro=vec3(uv,hz),rd=vec3(0.,0.,-1.);
+      float z=0.,zEnd=2.*hz,minD=1e3,zm=0.; bool hit=false;
+      for(int i=0;i<128;i++){
+        float d=map(ro+rd*z);
+        if(d<minD){minD=d;zm=z;}
+        if(d<.0008){hit=true;break;}
+        z+=max(d,.0065);                 /* never stall while skimming past a surface */
+        if(z>zEnd)break;
+      }
+      float a=hit?1.:1.-smoothstep(0.,1.1/uR,minD/.58);
+      if(a>0.){
+        vec3 pos=ro+rd*(hit?z:zm);
+        vec3 n=nrm(pos);
+        float ndv=clamp(-dot(n,rd),0.,1.);
+        float F=.06+.94*pow(1.-ndv,4.);
+
+        /* through the body of the glass to its far surface */
+        vec3 ri=refract(rd,n,1./1.5);
+        vec3 pi=pos-n*.006; float L=0.,Lp=0.;
+        bool out2=false;
+        for(int i=0;i<40;i++){
+          float d=-map(pi+ri*L);
+          if(d<0.){out2=true;break;}
+          if(L>.34)break;                    /* long, grazing paths are treated as solid body: keeps the glass calm */
+          Lp=L; L+=max(d,.006);
+        }
+        if(out2){ for(int i=0;i<6;i++){ float m=.5*(Lp+L); if(map(pi+ri*m)<0.)Lp=m; else L=m; } L=Lp; }
+        L=min(L,.34);
+        vec3 pe=pi+ri*L;
+        vec3 n2=normalize(mix(-nrm(pe),n,smoothstep(.20,.34,L)));   /* thick passages leave as if through a parallel face */
+
+        /* and out again, one wavelength at a time */
+        /* near the critical angle light stops leaving and reflects inside instead;
+           fading between the two (as real glass does) keeps that edge soft */
+        vec3 T;
+        vec3 dI=reflect(ri,n2);
+        vec3 TI=through(pe,dI);
+        float ci=dot(ri,n2), s2=1.-ci*ci;
+        vec3 dr=refract(ri,n2,1.46); if(dot(dr,dr)<.01)dr=dI;
+        vec3 dg=refract(ri,n2,1.50); if(dot(dg,dg)<.01)dg=dI;
+        vec3 db=refract(ri,n2,1.55); if(dot(db,db)<.01)db=dI;
+        T.r=mix(TI.r,through(pe,dr).r,smoothstep(1.,.5,s2*2.1316));
+        T.g=mix(TI.g,through(pe,dg).g,smoothstep(1.,.5,s2*2.25));
+        T.b=mix(TI.b,through(pe,db).b,smoothstep(1.,.5,s2*2.4025));
+
+        float ang=atan(pos.y,pos.x);
+        T*=exp(-L*vec3(.30,.24,.08));
+        T*=mix(vec3(1.),pal(L*1.4+ang*.32+uT*.03),.20+.10*uHeat);
+        vec3 ember=mix(vec3(1.,.58,.34),vec3(1.,.38,.55),.5+.5*sin(uT*.5+pos.x*3.));
+        T+=ember*(1.-exp(-L*2.2))*(.34*uHeat*uHeat+.35*uPulse);
+
+        /* thin-film reflection of the studio */
+        float th=ndv*1.1+dot(n.xy,vec2(.3,.22))+ang*.16+uT*.02;
+        vec3 film=mix(vec3(1.),pal(th),.66+.2*uHeat);
+        vec3 c=mix(T,env(reflect(rd,n))*film,F);
+        c+=(hash(frag+fract(uT*.37)*91.7)-.5)*.014;
+        o=mix(o,vec4(c,1.),a);
+      }
+    }
+    gl_FragColor=o;
+  }`;
+
+  let prog = null, U = {}, tex = null;
+  if (gl) try {
+    const mk = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(o); return o; };
+    prog = gl.createProgram();
+    gl.attachShader(prog, mk(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw gl.getProgramInfoLog(prog);
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ['uTex','uRes','uC','uR','uT','uFlow','uHeat','uPulse','uIn','uPr','uTook','uPp','RM'].forEach(n => U[n] = gl.getUniformLocation(prog, n));
+    tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.uniform1i(U.uTex, 0);
+    gl.clearColor(0, 0, 0, 0);
+    gl.enable(gl.SCISSOR_TEST);
+  } catch (err) { console.error(err); prog = null; }
+  if (!prog) root.classList.add('no-gl');
+
+  /* ───────── backdrop: the muted lavender-grey of a photo studio ───────── */
+  const tc = document.getElementById('bg'), ctx = tc.getContext('2d');
+  let W = 0, H = 0, dpr = 1, tdpr = 1, maxDpr = innerWidth < 600 ? 1.5 : 2, R = 200, cx = 0, cy = 0;
+
+  function layout(){
+    W = innerWidth; H = innerHeight;
+    dpr = Math.min(devicePixelRatio || 1, maxDpr);
+    tdpr = Math.min(devicePixelRatio || 1, 2, 4096 / Math.max(W, H));
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    tc.width = Math.round(W * tdpr); tc.height = Math.round(H * tdpr);
+
+    /* the sculpture fills the stage the grid gives it; no stage, no sculpture */
+    const b = stage.getBoundingClientRect();
+    R = b.height > 80 ? Math.min(b.width * .42, b.height * .385, 340) : 0;
+    cx = b.width ? b.left + b.width / 2 : W / 2; cy = b.height ? b.top + b.height * .465 : H * .4;
+    const halo = Math.max(R, 140);
+
+    ctx.setTransform(tdpr, 0, 0, tdpr, 0, 0);
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#dcdde7'); g.addColorStop(1, '#c6c7d6');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const blob = (x, y, r, c, a) => { const rg = ctx.createRadialGradient(x, y, 0, x, y, r); rg.addColorStop(0, `rgba(${c},${a})`); rg.addColorStop(1, `rgba(${c},0)`); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); };
+    blob(cx, cy, halo * 2.7, '236,236,246', .85);
+    blob(W, H, Math.max(W, H) * .55, '232,206,214', .55);
+    blob(0, 0, Math.max(W, H) * .5, '196,210,232', .6);
+    /* fine grain so the gradients never band */
+    const n = ctx.getImageData(0, 0, tc.width, tc.height), d = n.data;
+    for (let i = 0; i < d.length; i += 4) { const v = (Math.random() - .5) * 7; d[i] += v; d[i+1] += v; d[i+2] += v; }
+    ctx.putImageData(n, 0, 0);
+
+    if (prog) {
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tc);
+    }
+  }
+  let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(layout, 80); });
+
+  const M = { x:0, y:0, tx:0, ty:0 };
+  /* the piece of glass the cursor carries: it only exists once you have touched the ring,
+     grows with the time you spend on it, drains slowly once you leave, and lets go over the form */
+  const P = { x:0, y:0, tx:0, ty:0, seen:false, here:false, charge:0, vis:0, visT:0, r:0 };
+  addEventListener('pointermove', e => {
+    if (e.pointerType === 'touch') return;
+    M.tx = e.clientX / innerWidth * 2 - 1; M.ty = 1 - e.clientY / innerHeight * 2;
+    P.tx = e.clientX; P.ty = e.clientY; P.here = true;
+    if (!P.seen) { P.x = P.tx; P.y = P.ty; P.seen = true; }
+    P.visT = e.target.closest && e.target.closest('form,.brand') ? 0 : 1;
+  }, { passive:true });
+  document.addEventListener('pointerleave', () => { M.tx = M.ty = 0; P.here = false; P.visT = 0; });
+  addEventListener('blur', () => { P.here = false; P.visT = 0; });
+  input.addEventListener('focus', () => { P.visT = 0; });
+
+  const mat = (ax, ay) => {
+    const a = Math.cos(ax), b = Math.sin(ax), c = Math.cos(ay), d = Math.sin(ay);
+    return new Float32Array([ c, b*d, -a*d,   0, a, b,   d, -b*c, a*c ]);
+  };
+
+  let t0 = 0, last = 0, time = 0, frames = 0, slow = 0;
+  function frame(now){
+    if (!t0) t0 = last = now;
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    const sp = reduce ? .15 : 1;
+    time += dt * sp;
+    if (frames < 45) { frames++; if (dt > .022) slow++; if (frames === 45) { if (slow > 30 && maxDpr > 1) { maxDpr = maxDpr > 1.5 ? 1.5 : 1; layout(); frames = 0; } slow = 0; } }
+
+    const k = 1 - Math.pow(.02, dt);
+    S.heat += (S.heatT - S.heat) * k * .6;
+    S.pulse *= Math.pow(.1, dt);
+    S.flow += dt * sp * (.28 + .22 * S.heat + 2.2 * S.pulse);
+    M.x += (M.tx - M.x) * (1 - Math.pow(.03, dt)); M.y += (M.ty - M.y) * (1 - Math.pow(.03, dt));
+
+    if (R < 10) { gl.disable(gl.SCISSOR_TEST); gl.clear(gl.COLOR_BUFFER_BIT); gl.enable(gl.SCISSOR_TEST); requestAnimationFrame(frame); return; }
+    const p = reduce ? 1 : Math.min(1, (now - t0) / 2400), intro = 1 - Math.pow(1 - p, 4);
+    const ax = -.42 + Math.sin(time * .23) * .10 - M.y * .28 + (1 - intro) * 1.1;
+    const ay = Math.sin(time * .17) * .30 + M.x * .38 - (1 - intro) * .9;
+    const oy = cy + Math.sin(time * .5) * R * .018;
+
+    /* pointer → glass space */
+    P.x += (P.tx - P.x) * (1 - Math.pow(.0008, dt)); P.y += (P.ty - P.y) * (1 - Math.pow(.0008, dt));
+    const dist = Math.hypot(P.tx - cx, P.ty - oy) / R;
+    const onGlass = !reduce && P.here && P.visT > 0 && dist > .42 && dist < 1.14;
+    P.charge = Math.min(1, Math.max(0, P.charge + (onGlass ? dt * .55 : -dt * .07)));
+    P.vis += (P.visT - P.vis) * (1 - Math.pow(.015, dt));
+    const e3 = P.charge * P.charge * (3 - 2 * P.charge);
+    P.r = (P.charge > .001 ? .085 + .25 * e3 : 0) * P.vis * intro;
+
+    gl.uniform3f(U.uPp, (P.x - cx) / R, (oy - P.y) / R, .12);
+    gl.uniform1f(U.uPr, P.r);
+    gl.uniform1f(U.uTook, e3 * P.vis);
+    gl.uniformMatrix3fv(U.RM, false, mat(ax, ay));
+    gl.uniform2f(U.uRes, canvas.width, canvas.height);
+    gl.uniform2f(U.uC, cx * dpr, (H - oy) * dpr);
+    gl.uniform1f(U.uR, R * dpr);
+    gl.uniform1f(U.uT, time + 11);
+    gl.uniform1f(U.uFlow, S.flow + 2.4);
+    gl.uniform1f(U.uHeat, S.heat);
+    gl.uniform1f(U.uPulse, S.pulse);
+    gl.uniform1f(U.uIn, .6 + .4 * intro);
+
+    gl.disable(gl.SCISSOR_TEST); gl.clear(gl.COLOR_BUFFER_BIT); gl.enable(gl.SCISSOR_TEST);
+    const r = R * 1.5;
+    gl.scissor(Math.floor((cx - r) * dpr), Math.floor((H - oy - r) * dpr), Math.ceil(2 * r * dpr), Math.ceil(2 * r * dpr));
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (P.r > .004) {
+      const pr = (P.r + .4) * R;
+      gl.scissor(Math.floor((P.x - pr) * dpr), Math.floor((H - P.y - pr) * dpr), Math.ceil(2 * pr * dpr), Math.ceil(2 * pr * dpr));
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  Promise.race([
+    Promise.all([document.fonts.load('400 100px "Instrument Serif"'), document.fonts.load('italic 400 100px "Instrument Serif"'), document.fonts.load('600 19px "Instrument Sans"'), document.fonts.ready]),
+    new Promise(r => setTimeout(r, 2500))
+  ]).then(() => { layout(); if (prog) requestAnimationFrame(frame); requestAnimationFrame(() => root.classList.add('ready')); });
+})();
+</script>
+</body>
+</html>
