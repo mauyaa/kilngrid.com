@@ -177,7 +177,7 @@
 
       <div class="copy">
         <h1 class="in" style="--d:.4s">Coming <em>soon</em></h1>
-        <form class="in" style="--d:.55s" id="form" novalidate data-endpoint="">
+        <form class="in" style="--d:.55s" id="form" novalidate data-endpoint="https://script.google.com/macros/s/AKfycby3KW2VbNVGTrcwchOrYV6V0kNJUfYImiA1He8f-caOwXYs8BL36ez5po2GI6G7e6kT/exec">
           <div class="field">
             <div class="control">
               <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder=" " autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-describedby="err" required>
@@ -187,6 +187,7 @@
             <div class="thanks" id="thanks" role="status"></div>
           </div>
           <p class="error" id="err" role="alert"></p>
+          <input class="sr" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
         </form>
       </div>
     </main>
@@ -223,8 +224,9 @@
     form.classList.remove('bad'); input.removeAttribute('aria-invalid'); err.textContent = '';
     const btn = form.querySelector('button'); btn.disabled = true;
     try {
-      const url = form.dataset.endpoint;            // set data-endpoint on the form to POST { email } to your backend
-      if (url) { const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json', 'Accept':'application/json'}, body:JSON.stringify({ email }) }); if (!r.ok) throw 0; }
+      const url = form.dataset.endpoint;            // the waitlist sheet's web app URL
+      const company = form.elements.company ? form.elements.company.value : '';
+      if (url) await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({ email, company, source:location.hostname }) });
       else { try { localStorage.setItem('kilngrid:waitlist', email); } catch (_) {} }
       thanks.textContent = 'You’re on the list.';
       form.classList.add('done'); input.blur();
