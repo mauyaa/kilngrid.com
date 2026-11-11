@@ -218,8 +218,8 @@
   const KEY = 'kilngrid:joined';
   const clearError = () => { form.classList.remove('bad'); input.removeAttribute('aria-invalid'); err.textContent = ''; };
   const fail = msg => { err.textContent = msg; form.classList.add('bad'); input.setAttribute('aria-invalid', 'true'); input.focus(); };
-  const setDone = animate => {
-    thanks.textContent = 'You’re on the list.'; thanks.tabIndex = 0;
+  const setDone = (animate, msg = 'You’re on the list.') => {
+    thanks.textContent = msg; thanks.tabIndex = 0;
     form.classList.add('done'); S.heatT = 1;
     if (animate) S.pulse = 1;
   };
@@ -233,21 +233,32 @@
     S.heatT = valid(v) ? 1 : Math.min(.6, v.length / 22) + (v.includes('@') ? .12 : 0);
     S.pulse = Math.min(1, S.pulse + .35);
   });
+  /* answer instantly; the sheet confirms in the background and only corrects us if it must */
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    if (form.classList.contains('busy') || form.classList.contains('done')) return;
-    const email = input.value.trim();
+    if (form.classList.contains('done')) return;
+    const email = input.value.trim().toLowerCase();
     if (!email) return fail('Enter your email address to join.');
     if (!valid(email)) return fail('Check the address — it should look like name@example.com.');
-    clearError(); form.classList.add('busy');
+    clearError();
+    let known = ''; try { known = localStorage.getItem(KEY) || ''; } catch (_) {}
+    if (known === email) { input.blur(); return setDone(true, 'You’re already on the list.'); }
+
+    try { localStorage.setItem(KEY, email); } catch (_) {}
+    input.blur(); setDone(true);
+
+    const url = form.dataset.endpoint;
+    if (!url) return;
     try {
-      const url = form.dataset.endpoint;            // the waitlist sheet's web app URL
-      if (url) await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      const r = await fetch(url, { method:'POST', keepalive:true,
         body:JSON.stringify({ email, company:trap.value, source:location.hostname }) });
-      try { localStorage.setItem(KEY, email); } catch (_) {}
-      form.classList.remove('busy'); input.blur(); setDone(true);
+      let status = 'added';
+      try { status = (await r.json()).status || 'added'; } catch (_) {}
+      if (status === 'exists') thanks.textContent = 'You’re already on the list.';
+      if (status === 'invalid') throw 0;
     } catch (_) {
-      form.classList.remove('busy');
+      try { localStorage.removeItem(KEY); } catch (_) {}
+      form.classList.remove('done'); thanks.tabIndex = -1; S.heatT = .6;
       fail('We couldn’t add you just now. Check your connection and try again.');
     }
   });
