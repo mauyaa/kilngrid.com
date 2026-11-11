@@ -509,9 +509,10 @@
     /* pointer → glass space */
     P.x += (P.tx - P.x) * (1 - Math.pow(.0008, dt)); P.y += (P.ty - P.y) * (1 - Math.pow(.0008, dt));
     const dist = Math.hypot(P.tx - cx, P.ty - oy) / R;
-    const onGlass = !reduce && P.here && P.visT > 0 && dist > .42 && dist < 1.14;
+    const joined = form.classList.contains('done');          // once on the list, the glass stays whole
+    const onGlass = !reduce && !joined && P.here && P.visT > 0 && dist > .42 && dist < 1.14;
     P.charge = Math.min(1, Math.max(0, P.charge + (onGlass ? dt * .55 : -dt * .07)));
-    P.vis += (P.visT - P.vis) * (1 - Math.pow(.015, dt));
+    P.vis += ((joined ? 0 : P.visT) - P.vis) * (1 - Math.pow(.015, dt));
     const e3 = P.charge * P.charge * (3 - 2 * P.charge);
     P.r = (P.charge > .001 ? .085 + .25 * e3 : 0) * P.vis * intro;
 
