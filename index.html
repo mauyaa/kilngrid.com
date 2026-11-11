@@ -9,7 +9,7 @@
 <meta property="og:title" content="KilnGrid — Coming soon">
 <meta property="og:description" content="Join our waitlist.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff8a4c'/%3E%3Cstop offset='1' stop-color='%23ff4f6d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='1' y='1' width='8' height='8' rx='1.6' fill='%2315151c'/%3E%3Ccircle cx='15' cy='5' r='4' fill='url(%23g)'/%3E%3Crect x='1' y='11' width='8' height='8' rx='1.6' fill='%2315151c'/%3E%3Crect x='11' y='11' width='8' height='8' rx='1.6' fill='%2315151c'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff8a4c'/%3E%3Cstop offset='1' stop-color='%23ff4f6d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='1' y='1' width='8' height='8' rx='1.6' fill='%2315151c'/%3E%3Ccircle cx='15' cy='5' r='4' fill='url(%23g)'/%3E%3Crect x='1.8' y='11.8' width='6.4' height='6.4' rx='1.2' fill='none' stroke='url(%23g)' stroke-width='1.6'/%3E%3Crect x='11' y='11' width='8' height='8' rx='1.6' fill='%2315151c'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -49,10 +49,11 @@
   #bg,#gl{position:fixed;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity var(--t-atmos) var(--ease-in)}
   .ready #bg,.ready #gl{opacity:1}
 
-  .page{position:relative;z-index:1;height:100vh;height:100dvh;display:grid;grid-template-rows:var(--bar) minmax(0,1fr) auto;justify-items:center;
+  .page{position:relative;z-index:1;height:100vh;height:100dvh;display:grid;grid-template-rows:var(--bar) minmax(0,1fr);justify-items:center;
     padding:env(safe-area-inset-top) max(var(--m),env(safe-area-inset-right)) calc(var(--foot) + env(safe-area-inset-bottom)) max(var(--m),env(safe-area-inset-left));
     pointer-events:none}
-  main{display:contents}
+  /* glass + words travel as one group, centred in the space under the bar */
+  main{grid-row:2;width:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .bar,.copy>*{pointer-events:auto}
 
   .in{opacity:0;transform:translateY(8px);transition:opacity var(--t-atmos) var(--ease-in) var(--d,0s),transform var(--t-atmos) var(--ease-in) var(--d,0s)}
@@ -66,22 +67,23 @@
   .brand:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
   /* the glass takes whatever the grid leaves it */
-  .stage{grid-row:2;width:100%;min-height:0;display:grid;place-items:center}
+  .stage{flex:0 1 auto;width:100%;min-height:0;height:calc(min(100vw - 2 * var(--m), 540px) * 1.02);display:grid;place-items:center}
 
-  .copy{grid-row:3;width:100%;display:grid;justify-items:center}
+  .copy{flex:none;width:100%;display:grid;justify-items:center}
   h1{font-family:"Instrument Serif","Times New Roman",serif;font-weight:400;font-size:var(--h1);line-height:1;letter-spacing:-.022em;text-align:center}
   h1 em{font-style:italic;letter-spacing:-.01em;padding-right:.04em}
 
   form{position:relative;margin-top:var(--gap);width:min(432px,100%)}
   .field{
-    position:relative;display:flex;align-items:center;min-height:56px;padding:4px 4px 4px 24px;border-radius:28px;
+    position:relative;display:flex;align-items:center;min-height:56px;padding:4px 4px 4px 24px;border-radius:28px;cursor:text;
     background:linear-gradient(180deg,rgba(255,255,255,.66),rgba(255,255,255,.40));
     border:1px solid rgba(255,255,255,.8);
     -webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 1px 2px rgba(20,20,40,.06),0 24px 48px -24px rgba(50,45,100,.45);
     transition:background var(--t-med) var(--ease),box-shadow var(--t-med) var(--ease);
   }
-  .field:focus-within{background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.56));outline:2px solid var(--ink);outline-offset:2px}
+  .field:focus-within{background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.62));outline:2px solid rgba(21,21,28,.85);outline-offset:3px}
+  .busy .field>button:not(.thanks){opacity:.55;pointer-events:none}
   .bad .field{outline:2px solid var(--danger);outline-offset:2px}
 
   /* the label never disappears: it rests in the field, then rides above the value */
@@ -90,7 +92,8 @@
     font:inherit;font-size:16px;line-height:24px;letter-spacing:-.01em;color:var(--ink);border-radius:0}
   label{position:absolute;left:0;top:12px;font-size:16px;line-height:24px;letter-spacing:-.01em;color:var(--ink-2);pointer-events:none;
     transform-origin:0 0;transition:transform var(--t-fast) var(--ease);white-space:nowrap}
-  input:focus+label,input:not(:placeholder-shown)+label{transform:translateY(-8px) scale(.75)}
+  input:focus+label,input:not(:placeholder-shown)+label,input:-webkit-autofill+label{transform:translateY(-8px) scale(.75)}
+  input:-webkit-autofill{-webkit-box-shadow:0 0 0 40px transparent inset;-webkit-text-fill-color:var(--ink);transition:background-color 9999s}
 
   button{
     flex:none;min-height:48px;padding:0 24px;border:0;border-radius:24px;cursor:pointer;white-space:nowrap;
@@ -111,11 +114,15 @@
   }
 
   .control,.field>button{transition:opacity var(--t-med) var(--ease),transform var(--t-press) var(--ease),background var(--t-fast) var(--ease)}
-  .thanks{position:absolute;inset:0;display:grid;place-items:center;padding:0 16px;text-align:center;
-    font-family:"Instrument Serif",serif;font-style:italic;font-size:20px;line-height:28px;
+  .thanks{position:absolute;inset:0;display:grid;place-items:center;min-height:0;padding:0 16px;text-align:center;border-radius:28px;
+    background:none;box-shadow:none;color:var(--ink);
+    font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;font-size:20px;line-height:28px;letter-spacing:0;
     opacity:0;pointer-events:none;transition:opacity var(--t-slow) var(--ease-in) var(--t-fast)}
-  .done .control,.done .field>button{opacity:0;pointer-events:none}
-  .done .thanks{opacity:1}
+  @media (hover:hover){.thanks:hover{background:none}}
+  .thanks:active{transform:none}
+  .done .control,.done .field>button:not(.thanks){opacity:0;pointer-events:none}
+  .done .thanks{opacity:1;pointer-events:auto}
+  .done .field{cursor:pointer}
 
   /* errors say what happened and how to fix it; never colour alone */
   .error{position:absolute;left:0;right:0;top:calc(100% + 8px);text-align:center;font-size:14px;line-height:20px;font-weight:500;color:var(--danger);
@@ -123,21 +130,22 @@
   .bad .error{opacity:1}
 
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .trap{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 
   /* phone on its side: glass and words sit side by side instead of shrinking */
   @media (orientation:landscape) and (max-height:480px) and (min-width:560px){
     :root{--h1:48px;--gap:24px;--foot:16px}
-    .page{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:var(--bar) minmax(0,1fr);column-gap:var(--m)}
-    .bar{grid-column:1/-1}
-    .stage{grid-column:1;grid-row:2}
-    .copy{grid-column:2;grid-row:2;align-self:center}
+    main{flex-direction:row;column-gap:var(--m)}
+    .stage{flex:1 1 0;height:100%}
+    .copy{flex:1 1 0}
   }
   /* heavy zoom / tiny windows: the task stays, the decoration goes, and the page may scroll */
   @media (max-height:279px),(max-height:399px) and (max-width:559px){
     html,body{overflow:auto}
     .page{height:auto;min-height:100vh;min-height:100dvh;grid-template-rows:var(--bar) auto;align-content:start}
     .stage,#gl{display:none}
-    .copy{grid-row:2;padding-top:24px}
+    main{justify-content:flex-start}
+    .copy{padding-top:24px}
   }
 
   /* without WebGL the ring is drawn flat */
@@ -165,7 +173,7 @@
           <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8a4c"/><stop offset="1" stop-color="#ff4f6d"/></linearGradient></defs>
           <rect x="1" y="1" width="8" height="8" rx="1.6" fill="#15151c"/>
           <circle cx="15" cy="5" r="4" fill="url(#g)"/>
-          <rect x="1" y="11" width="8" height="8" rx="1.6" fill="#15151c"/>
+          <rect x="1.8" y="11.8" width="6.4" height="6.4" rx="1.2" fill="none" stroke="url(#g)" stroke-width="1.6"/>
           <rect x="11" y="11" width="8" height="8" rx="1.6" fill="#15151c"/>
         </svg>
         KilnGrid
@@ -178,16 +186,16 @@
       <div class="copy">
         <h1 class="in" style="--d:.4s">Coming <em>soon</em></h1>
         <form class="in" style="--d:.55s" id="form" novalidate data-endpoint="https://script.google.com/macros/s/AKfycby3KW2VbNVGTrcwchOrYV6V0kNJUfYImiA1He8f-caOwXYs8BL36ez5po2GI6G7e6kT/exec">
-          <div class="field">
+          <div class="field" id="field">
             <div class="control">
               <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder=" " autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-describedby="err" required>
               <label for="email">Email address</label>
             </div>
             <button type="submit">Join our waitlist</button>
-            <div class="thanks" id="thanks" role="status"></div>
+            <button type="button" class="thanks" id="thanks" title="Use a different email" tabindex="-1" aria-live="polite"></button>
           </div>
           <p class="error" id="err" role="alert"></p>
-          <input class="sr" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <input class="trap" type="text" name="kg_ref" id="kg_ref" tabindex="-1" autocomplete="off" aria-hidden="true">
         </form>
       </div>
     </main>
@@ -205,34 +213,50 @@
   const S = { heat:0, heatT:0, pulse:0, flow:0 };
 
   /* ───────── waitlist: typing warms the glass ───────── */
-  const err = document.getElementById('err'), thanks = document.getElementById('thanks');
-  const fail = msg => {
-    err.textContent = msg;
-    form.classList.add('bad'); input.setAttribute('aria-invalid', 'true'); input.focus();
+  const err = document.getElementById('err'), thanks = document.getElementById('thanks'),
+        field = document.getElementById('field'), trap = document.getElementById('kg_ref');
+  const KEY = 'kilngrid:joined';
+  const clearError = () => { form.classList.remove('bad'); input.removeAttribute('aria-invalid'); err.textContent = ''; };
+  const fail = msg => { err.textContent = msg; form.classList.add('bad'); input.setAttribute('aria-invalid', 'true'); input.focus(); };
+  const setDone = animate => {
+    thanks.textContent = 'You’re on the list.'; thanks.tabIndex = 0;
+    form.classList.add('done'); S.heatT = 1;
+    if (animate) S.pulse = 1;
   };
+  field.addEventListener('pointerdown', e => {             // a tap anywhere on the pill lands in the field, first time
+    if (e.target.closest('button') || form.classList.contains('done')) return;
+    if (e.target !== input) { e.preventDefault(); input.focus(); }
+  });
   input.addEventListener('input', () => {
-    if (form.classList.contains('bad')) { form.classList.remove('bad'); input.removeAttribute('aria-invalid'); err.textContent = ''; }
+    if (form.classList.contains('bad')) clearError();
     const v = input.value.trim();
     S.heatT = valid(v) ? 1 : Math.min(.6, v.length / 22) + (v.includes('@') ? .12 : 0);
     S.pulse = Math.min(1, S.pulse + .35);
   });
   form.addEventListener('submit', async e => {
     e.preventDefault();
+    if (form.classList.contains('busy') || form.classList.contains('done')) return;
     const email = input.value.trim();
     if (!email) return fail('Enter your email address to join.');
     if (!valid(email)) return fail('Check the address — it should look like name@example.com.');
-    form.classList.remove('bad'); input.removeAttribute('aria-invalid'); err.textContent = '';
-    const btn = form.querySelector('button'); btn.disabled = true;
+    clearError(); form.classList.add('busy');
     try {
       const url = form.dataset.endpoint;            // the waitlist sheet's web app URL
-      const company = form.elements.company ? form.elements.company.value : '';
-      if (url) await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({ email, company, source:location.hostname }) });
-      else { try { localStorage.setItem('kilngrid:waitlist', email); } catch (_) {} }
-      thanks.textContent = 'You’re on the list.';
-      form.classList.add('done'); input.blur();
-      S.heatT = 1; S.pulse = 1;
-    } catch (_) { btn.disabled = false; fail('We couldn’t add you just now. Check your connection and try again.'); }
+      if (url) await fetch(url, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({ email, company:trap.value, source:location.hostname }) });
+      try { localStorage.setItem(KEY, email); } catch (_) {}
+      form.classList.remove('busy'); input.blur(); setDone(true);
+    } catch (_) {
+      form.classList.remove('busy');
+      fail('We couldn’t add you just now. Check your connection and try again.');
+    }
   });
+  thanks.addEventListener('click', () => {                 // someone wants to add another address
+    try { localStorage.removeItem(KEY); } catch (_) {}
+    form.classList.remove('done'); thanks.tabIndex = -1;
+    input.value = ''; S.heatT = 0; input.focus();
+  });
+  try { if (localStorage.getItem(KEY)) setDone(false); } catch (_) {}
 
   /* ───────── glass ───────── */
   const gl = canvas.getContext('webgl', { antialias:false, alpha:true, premultipliedAlpha:true, powerPreference:'high-performance' });
